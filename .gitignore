@@ -22,6 +22,9 @@ playwright-report/
 .env.local
 .env.*.local
 
+# Local configuration (per-user settings)
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

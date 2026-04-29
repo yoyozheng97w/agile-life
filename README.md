@@ -253,7 +253,3 @@ Data persists under `agile-life-app/v1`:
   ]
 }
 ```
-
----
-
-**Built with ❤️ for managing life, one sprint at a time.**
