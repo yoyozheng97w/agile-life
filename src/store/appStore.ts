@@ -45,7 +45,7 @@ export const selectDraftSprint = (state: AppStore) =>
 export const selectCompletedSprints = (state: AppStore) =>
   state.sprints
     .filter((s) => s.status === 'completed')
-    .sort((a, b) => a.number - b.number);
+    .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
 
 export const selectTicketsForSprint = (sprintId: string) => (state: AppStore) =>
   state.tickets.filter((t) => t.sprintId === sprintId);

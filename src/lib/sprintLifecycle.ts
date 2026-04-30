@@ -58,3 +58,27 @@ export function closeAndCarryOver(sprintId: string) {
     });
   }
 }
+
+export function syncSprintStatuses() {
+  const store = useAppStore.getState();
+  const { sprints, updateSprint } = store;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const sprint of sprints) {
+    const startDate = new Date(sprint.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(sprint.endDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Auto-activate planning sprints when start date reaches
+    if (sprint.status === 'planning' && today >= startDate && today <= endDate) {
+      updateSprint(sprint.id, { status: 'active' });
+    }
+
+    // Auto-close active sprints when end date passes
+    if (sprint.status === 'active' && today > endDate) {
+      closeAndCarryOver(sprint.id);
+    }
+  }
+}

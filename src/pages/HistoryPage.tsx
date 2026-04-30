@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { format, subMonths } from 'date-fns';
 import { useAppStore, selectCompletedSprints } from '../store/appStore';
 import type { Sprint } from '../types';
 
@@ -9,10 +10,50 @@ export default function HistoryPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPlanned, setEditPlanned] = useState<number>(0);
   const [editCompleted, setEditCompleted] = useState<number>(0);
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editEndDate, setEditEndDate] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [filterMode, setFilterMode] = useState<'all' | '3m' | '6m' | 'custom'>('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
-  const chartData = completedSprints.map((sprint) => ({
-    sprint: `${sprint.startDate}`,
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const filteredSprints = useMemo(() => {
+    const filtered = completedSprints.filter((sprint) => {
+      const sprintEnd = new Date(sprint.endDate);
+      sprintEnd.setHours(0, 0, 0, 0);
+
+      if (filterMode === 'all') return true;
+
+      if (filterMode === '3m') {
+        const cutoff = subMonths(today, 3);
+        return sprintEnd >= cutoff;
+      }
+
+      if (filterMode === '6m') {
+        const cutoff = subMonths(today, 6);
+        return sprintEnd >= cutoff;
+      }
+
+      if (filterMode === 'custom') {
+        if (!customFrom || !customTo) return true;
+        const fromDate = new Date(customFrom);
+        const toDate = new Date(customTo);
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(23, 59, 59, 999);
+        return sprintEnd >= fromDate && sprintEnd <= toDate;
+      }
+
+      return true;
+    });
+
+    return filtered;
+  }, [completedSprints, filterMode, customFrom, customTo]);
+
+  const chartData = filteredSprints.map((sprint) => ({
+    sprint: `${format(new Date(sprint.startDate), 'MMM d')} – ${format(new Date(sprint.endDate), 'MMM d')}`,
     planned: sprint.plannedPoints,
     completed: sprint.completedPoints,
   }));
@@ -21,12 +62,16 @@ export default function HistoryPage() {
     setEditingId(sprint.id);
     setEditPlanned(sprint.plannedPoints);
     setEditCompleted(sprint.completedPoints);
+    setEditStartDate(sprint.startDate);
+    setEditEndDate(sprint.endDate);
   };
 
   const handleSave = (sprintId: string) => {
     updateSprint(sprintId, {
       plannedPoints: editPlanned,
       completedPoints: editCompleted,
+      startDate: editStartDate,
+      endDate: editEndDate,
     });
     setEditingId(null);
   };
@@ -51,7 +96,89 @@ export default function HistoryPage() {
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-3xl font-bold">Sprint History</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Sprint History</h1>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setFilterMode('all');
+              setCustomFrom('');
+              setCustomTo('');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${
+              filterMode === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => {
+              setFilterMode('3m');
+              setCustomFrom('');
+              setCustomTo('');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${
+              filterMode === '3m'
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            }`}
+          >
+            Last 3 Months
+          </button>
+          <button
+            onClick={() => {
+              setFilterMode('6m');
+              setCustomFrom('');
+              setCustomTo('');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${
+              filterMode === '6m'
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            }`}
+          >
+            Last 6 Months
+          </button>
+          <button
+            onClick={() => setFilterMode('custom')}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${
+              filterMode === 'custom'
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            }`}
+          >
+            Custom
+          </button>
+        </div>
+
+        {filterMode === 'custom' && (
+          <div className="mt-4 flex gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-1">From</label>
+              <input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-1">To</label>
+              <input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold mb-4">Velocity Trend</h2>
@@ -101,7 +228,7 @@ export default function HistoryPage() {
             </tr>
           </thead>
           <tbody>
-            {completedSprints.map((sprint) => {
+            {filteredSprints.map((sprint) => {
               const isEditing = editingId === sprint.id;
               const displayPlanned = isEditing ? editPlanned : sprint.plannedPoints;
               const displayCompleted = isEditing ? editCompleted : sprint.completedPoints;
@@ -112,7 +239,27 @@ export default function HistoryPage() {
 
               return (
                 <tr key={sprint.id} className="border-b border-slate-100">
-                  <td className="py-3 px-4 font-semibold text-slate-700">{sprint.startDate} ~ {sprint.endDate}</td>
+                  <td className="py-3 px-4 font-semibold text-slate-700">
+                    {isEditing ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={editStartDate}
+                          onChange={(e) => setEditStartDate(e.target.value)}
+                          className="px-2 py-1 border border-slate-300 rounded text-sm"
+                        />
+                        <span className="text-slate-600">~</span>
+                        <input
+                          type="date"
+                          value={editEndDate}
+                          onChange={(e) => setEditEndDate(e.target.value)}
+                          className="px-2 py-1 border border-slate-300 rounded text-sm"
+                        />
+                      </div>
+                    ) : (
+                      `${sprint.startDate} ~ ${sprint.endDate}`
+                    )}
+                  </td>
                   <td className="py-3 px-4 text-right">
                     {isEditing ? (
                       <input

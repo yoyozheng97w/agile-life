@@ -26,6 +26,7 @@ export interface Sprint {
   status: SprintStatus;
   plannedPoints: number;
   completedPoints: number;
+  retrospective?: string;
 }
 
 export interface Ticket {

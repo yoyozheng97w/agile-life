@@ -29,10 +29,13 @@
    - `SortableContext` wraps tickets in each column
    - collision detection: `closestCorners`
 
-4. **Sprint Lifecycle** (close + carry-over)
-   - Atomic operation in `src/lib/sprintLifecycle.ts`
+4. **Sprint Lifecycle** (automatic status transitions + carry-over)
+   - Sprints transition automatically based on dates via `syncSprintStatuses()`
+   - `planning` → `active`: when today ≥ startDate
+   - `active` → `completed`: when today > endDate
    - On close: mark completed, snapshot completedPoints, clone incomplete tickets to new sprint
    - Sets `carriedFromSprintId` flag on carried tickets
+   - Location: `src/lib/sprintLifecycle.ts`
 
 ---
 
@@ -42,9 +45,12 @@
 |------|---------|-----------|
 | `src/types.ts` | All TypeScript interfaces | ✅ YES — master schema |
 | `src/store/appStore.ts` | Zustand store + persist config | ✅ YES — all state |
-| `src/components/TicketCard.tsx` | Draggable ticket element | ✅ YES — Kanban core |
-| `src/pages/KanbanPage.tsx` | Drag-and-drop orchestration | ✅ YES — main feature |
-| `src/lib/sprintLifecycle.ts` | Close sprint + carry over | ✅ YES — data mutation |
+| `src/components/TicketCard.tsx` | Draggable ticket element with menu | ✅ YES — Kanban core |
+| `src/components/KanbanColumn.tsx` | Droppable column + inline ticket creation | ✅ YES — Kanban core |
+| `src/pages/KanbanPage.tsx` | Active sprint board + sprint creation | ✅ YES — main feature |
+| `src/pages/HistoryPage.tsx` | Velocity charts + date filtering + edit | ✅ YES — analytics |
+| `src/pages/RetroPage.tsx` | Retrospective notes per sprint | ✅ YES — reflection |
+| `src/lib/sprintLifecycle.ts` | Auto status sync + close + carry over | ✅ YES — data mutation |
 | `src/lib/notificationScheduler.ts` | Daily standup reminders | ✅ YES — background task |
 | `.claude/test-protocol.md` | Testing checklist | ✅ YES — validation rules |
 
@@ -60,9 +66,10 @@
    - PointerSensor without distance config works fine
    - Manual browser testing required; E2E Playwright is flaky for dnd-kit
 
-3. **Sprint endDate check redirects**
-   - If `today > sprint.endDate && status='active'`, KanbanPage redirects to `/review`
-   - For testing, must manually set endDate to yesterday in DevTools
+3. **Automatic sprint status transitions**
+   - Sprints auto-transition via `syncSprintStatuses()` called on app mount
+   - When today > endDate, sprint auto-closes and carry-over logic runs
+   - For testing, set endDate to yesterday in DevTools, then refresh to trigger transition
 
 4. **Complete at Most Once**
    - `completedAt` is set ONCE on first move to Done
@@ -92,7 +99,8 @@ localStorage['agile-life-app/v1'] = {
     endDate: "2026-05-13",
     status: "active" | "planning" | "completed",
     plannedPoints: 16,
-    completedPoints: 8
+    completedPoints: 8,
+    retrospective?: "Retrospective notes for this sprint"
   }],
   tickets: [{
     id: uuid,
@@ -153,18 +161,6 @@ localStorage['agile-life-app/v1'] = {
 
 ---
 
-## 🔜 Future Enhancements (Out of Scope v0.1)
-
-- [ ] Edit tickets post-creation (currently can only add/delete)
-- [ ] Multi-device sync (would require backend)
-- [ ] Standup logging form (currently reminder-only)
-- [ ] Time tracking per ticket
-- [ ] Export/import data as JSON
-- [ ] Recurring sprints template
-- [ ] Goals/OKRs across sprints
-
----
-
 ## 🆘 Quick Debug Commands
 
 ```bash
@@ -205,5 +201,5 @@ F12 → Elements → hover over ticket → check data-sortable-id attribute
 
 ---
 
-**Last Updated**: 2026-04-29
+**Last Updated**: 2026-04-30
 **Maintained By**: Claude Code

@@ -9,11 +9,12 @@ Manage your life using Scrum methodology. A personal, single-machine web app to 
 ## ✨ Features
 
 - 📋 **Sprint Planning** — Create sprints with configurable duration, estimate work using Fibonacci story points
-- 🎯 **Kanban Board** — Drag-and-drop tickets across 4 columns: To-Do, Doing, Blocking, Done
-- 📊 **Velocity Tracking** — Visualize completed points per sprint with interactive charts
+- 🎯 **Kanban Board** — Drag-and-drop tickets across 4 columns: To-Do, Doing, Blocking, Done; edit or delete tickets inline
+- 📊 **Velocity Tracking** — Visualize completed points per sprint with interactive charts and date-range filtering
 - ⏰ **Daily Standup Reminders** — Browser notifications at your configured time
 - 💾 **Offline-First** — All data persists in browser localStorage, no backend required
-- 🔄 **Smart Sprint Close** — Incomplete tickets automatically carry over to the next sprint
+- 🔄 **Automatic Sprint Lifecycle** — Sprints activate/close based on dates; incomplete tickets carry over automatically
+- 💭 **Retrospectives** — Record and edit sprint retrospectives to track lessons learned
 - 🎨 **Clean UI** — Modern, responsive interface built with Tailwind CSS
 
 ---
@@ -44,7 +45,7 @@ Manage your life using Scrum methodology. A personal, single-machine web app to 
 
 ```bash
 # Clone or navigate to project
-cd agile-life-manager
+cd agile-life
 
 # Install dependencies
 npm install
@@ -72,26 +73,18 @@ Navigate to `/settings` to:
 └── Notifications: Enabled/Disabled
 ```
 
-### 2. **Plan a Sprint**
-Go to `/plan` to:
-- Create a new sprint starting today
-- Add tickets with Fibonacci story points (1, 2, 3, 5, 8, 13, 21)
-- Tickets from incomplete sprints auto-load for carry-over
-
-```bash
-# Example: Create Sprint #1
-Start Date: 2026-04-29
-Duration: 14 days
-Add Tickets:
-  ✓ User authentication (5 points)
-  ✓ Dashboard UI (8 points)
-  ✓ Setup database (3 points)
-```
+### 2. **Create & Manage Sprints**
+Home page (`/`) shows active sprint. If no sprint is active:
+- Enter start date and duration (end date auto-calculated)
+- Sprint activates automatically when today's date ≥ start date
+- Sprint closes automatically when today's date > end date
+- Edit sprint dates anytime by clicking "✏️ Edit Dates"
 
 ### 3. **Work on Kanban**
-Home page (`/`) displays active sprint:
-- **Drag tickets** between columns: `To-Do → Doing → Done`
-- **Mark blocking issues** to highlight impediments
+Main board displays tickets in 4 columns:
+- **Drag tickets** between columns: `To-Do → Doing → Blocking → Done`
+- **Add new ticket** in To-Do column using "+ Add Ticket" button
+- **Edit or delete** tickets via ⋮ menu on each card
 - **Real-time metrics** show planned vs. completed points
 
 ```
@@ -106,24 +99,23 @@ At your configured time (e.g., 09:30), the app sends a notification:
 - Fires once per day per browser tab
 
 ### 5. **Sprint Review**
-When the sprint ends, navigate to `/review` to:
-- Compare planned vs. completed points
-- Review done and incomplete tickets
-- Auto-carry incomplete tickets to next sprint
-
-```
-Sprint #1 Results
-Planned: 16 points
-Completed: 13 points (81%)
-
-📊 Carry over 3 incomplete points → Sprint #2
-```
+When sprint automatically closes, navigate to `/review` to:
+- Review sprint summary: planned vs. completed points
+- See carried-over tickets from incomplete items
+- Start a new sprint from the Kanban page
 
 ### 6. **Track Velocity**
 View `/history` to analyze trends:
 - **Line chart**: Completed points per sprint
 - **Bar chart**: Planned vs. completed comparison
-- **Summary table**: Sprint-by-sprint breakdown
+- **Summary table**: Sprint-by-sprint breakdown with date-range filtering
+- **Edit sprints**: Modify planned/completed points and dates
+
+### 7. **Record Retrospectives**
+Navigate to `/retro` to:
+- Review all completed sprints
+- Write detailed retrospective notes per sprint
+- Edit and save lessons learned for future reference
 
 ---
 
@@ -142,10 +134,10 @@ agile-life-manager/
 │   │   ├── TicketCard.tsx            # Ticket UI component
 │   │   └── PointsPicker.tsx          # Fibonacci selector
 │   ├── pages/
-│   │   ├── KanbanPage.tsx            # Active sprint board
-│   │   ├── SprintPlanningPage.tsx    # Planning interface
-│   │   ├── SprintReviewPage.tsx      # Sprint wrap-up
-│   │   ├── HistoryPage.tsx           # Velocity charts + edit/delete
+│   │   ├── KanbanPage.tsx            # Active sprint board + sprint creation
+│   │   ├── SprintReviewPage.tsx      # Sprint summary (auto-triggered on close)
+│   │   ├── HistoryPage.tsx           # Velocity charts + edit/delete/filter
+│   │   ├── RetroPage.tsx             # Retrospective notes per sprint
 │   │   └── SettingsPage.tsx          # App configuration
 │   ├── store/
 │   │   ├── appStore.ts               # Zustand store (single, persisted)
@@ -209,6 +201,9 @@ npm run lint     # Run ESLint
 - Graceful fallback if browser tab is closed
 
 **Sprint Lifecycle**
+- Sprints transition automatically based on dates (via `syncSprintStatuses()`):
+  - `planning` → `active`: when today ≥ startDate
+  - `active` → `completed`: when today > endDate (triggers auto-close logic)
 - On sprint close, `sprintLifecycle.ts` atomically:
   1. Marks sprint as completed, snapshots completed points
   2. Clones incomplete tickets to new draft sprint
@@ -236,6 +231,7 @@ Data persists under `agile-life-app/v1`:
       status: 'planning' | 'active' | 'completed'
       plannedPoints: number
       completedPoints: number
+      retrospective?: string       // Optional retrospective notes
     }
   ]
   tickets: [

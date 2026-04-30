@@ -5,9 +5,8 @@ export default function Layout() {
 
   const navItems = [
     { path: '/', label: 'Kanban', icon: '📋' },
-    { path: '/plan', label: 'Plan', icon: '📝' },
-    { path: '/review', label: 'Review', icon: '✅' },
     { path: '/history', label: 'History', icon: '📈' },
+    { path: '/retro', label: 'Retrospective', icon: '💭' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 

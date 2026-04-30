@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { useAppStore, selectActiveSprint, selectTicketsForSprint } from '../store/appStore';
-import { closeAndCarryOver } from '../lib/sprintLifecycle';
 import TicketCard from '../components/TicketCard';
 
 export default function SprintReviewPage() {
@@ -8,13 +9,14 @@ export default function SprintReviewPage() {
   const state = useAppStore.getState();
   const activeSprint = selectActiveSprint(state);
 
+  useEffect(() => {
+    if (!activeSprint) {
+      navigate('/');
+    }
+  }, [activeSprint, navigate]);
+
   if (!activeSprint) {
-    return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Sprint Review</h1>
-        <p className="text-slate-600">No active sprint to review.</p>
-      </div>
-    );
+    return null;
   }
 
   const sprintTickets = selectTicketsForSprint(activeSprint.id)(state);
@@ -22,14 +24,11 @@ export default function SprintReviewPage() {
   const incompleteTickets = sprintTickets.filter((t) => t.status !== 'done');
   const completedPoints = completedTickets.reduce((sum, t) => sum + t.points, 0);
 
-  const handleCloseSprint = () => {
-    closeAndCarryOver(activeSprint.id);
-    navigate('/plan');
-  };
-
   return (
     <div className="p-6 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Sprint {activeSprint.number} Review</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        {format(new Date(activeSprint.startDate), 'MMM d')} – {format(new Date(activeSprint.endDate), 'MMM d')} Review
+      </h1>
 
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="grid grid-cols-2 gap-6 mb-6">
@@ -43,7 +42,7 @@ export default function SprintReviewPage() {
           </div>
         </div>
 
-        <div className="mb-6 text-sm">
+        <div className="text-sm">
           <p className="text-slate-600">
             Completion rate:{' '}
             <span className="font-semibold">
@@ -54,14 +53,14 @@ export default function SprintReviewPage() {
             </span>
           </p>
         </div>
-
-        <button
-          onClick={handleCloseSprint}
-          className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
-        >
-          Close Sprint & Plan Next
-        </button>
       </div>
+
+      <button
+        onClick={() => navigate('/')}
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 mb-6"
+      >
+        Back to Kanban
+      </button>
 
       <div className="space-y-6">
         <div>
