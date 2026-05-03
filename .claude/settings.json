@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npx tsc -b)",
+      "Bash(npm run test:e2e)",
+      "Bash(npx playwright show-report)"
+    ]
+  }
+}

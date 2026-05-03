@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import KanbanPage from './pages/KanbanPage';
-import SprintReviewPage from './pages/SprintReviewPage';
 import HistoryPage from './pages/HistoryPage';
 import RetroPage from './pages/RetroPage';
 import SettingsPage from './pages/SettingsPage';
@@ -21,7 +20,6 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<KanbanPage />} />
-          <Route path="/review" element={<SprintReviewPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/retro" element={<RetroPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -52,7 +52,8 @@
 | `src/pages/RetroPage.tsx` | Retrospective notes per sprint | ✅ YES — reflection |
 | `src/lib/sprintLifecycle.ts` | Auto status sync + close + carry over | ✅ YES — data mutation |
 | `src/lib/notificationScheduler.ts` | Daily standup reminders | ✅ YES — background task |
-| `.claude/test-protocol.md` | Testing checklist | ✅ YES — validation rules |
+| `.claude/agents/qa-engineer.md` | QA agent definition + test protocol | ✅ YES — validation rules |
+| `e2e/` | Playwright E2E test suite (63 tests) | ✅ YES — automated testing |
 
 ---
 
@@ -120,7 +121,7 @@ localStorage['agile-life-app/v1'] = {
 
 ## 🔄 Test Before Every Change
 
-**Non-negotiable**: Follow `.claude/test-protocol.md`
+**Non-negotiable**: Follow `.claude/agents/qa-engineer.md`
 
 - Level 1: TypeScript compile (2 min) — MUST PASS
 - Level 2: Manual browser tests (10 min) — MUST PASS for changed features
@@ -170,8 +171,8 @@ npx tsc -b
 # Run E2E tests
 npm run test:e2e
 
-# View test results
-open test-results/
+# View HTML test report
+npx playwright show-report
 
 # Hard refresh (Ctrl+Shift+R equivalent)
 F12 → Network → Disable cache → Refresh
