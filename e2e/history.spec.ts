@@ -6,7 +6,6 @@ import {
   gotoFresh,
   gotoSeeded,
   readStore,
-  todayISO,
 } from './helpers/store';
 
 const MAY = '2026-05';

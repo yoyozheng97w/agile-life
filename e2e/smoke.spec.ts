@@ -8,7 +8,7 @@ test.describe('Smoke - app loads and routes work', () => {
     await expect(page.getByRole('heading', { name: 'Agile Life' })).toBeVisible();
 
     const nav = page.getByRole('navigation');
-    await expect(nav.getByRole('link', { name: /Kanban/ })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /Sprint Board/ })).toBeVisible();
     await expect(nav.getByRole('link', { name: /History/ })).toBeVisible();
     await expect(nav.getByRole('link', { name: /Retrospective/ })).toBeVisible();
     await expect(nav.getByRole('link', { name: /Settings/ })).toBeVisible();
@@ -29,11 +29,11 @@ test.describe('Smoke - app loads and routes work', () => {
     await expect(page).toHaveURL(/\/retro$/);
     await expect(page.getByRole('heading', { name: 'Retrospective' })).toBeVisible();
 
-    await page.getByRole('link', { name: /Kanban/ }).click();
+    await page.getByRole('link', { name: /Sprint Board/ }).click();
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test('unknown routes redirect to Kanban', async ({ page }) => {
+  test('unknown routes redirect to Sprint Board', async ({ page }) => {
     await gotoFresh(page);
     await page.goto(BASE_URL + '/this-does-not-exist');
     await expect(page).toHaveURL(/\/$/);
@@ -46,7 +46,7 @@ test.describe('Smoke - app loads and routes work', () => {
     });
   });
 
-  test('empty state on Kanban prompts to create a sprint', async ({ page }) => {
+  test('empty state on Sprint Board prompts to create a sprint', async ({ page }) => {
     await gotoFresh(page);
     await expect(page.getByRole('heading', { level: 1, name: 'Create Sprint' })).toBeVisible();
     await expect(

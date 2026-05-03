@@ -7,11 +7,11 @@ import {
 } from '@dnd-kit/core';
 import { useAppStore, selectActiveSprint, selectTicketsForSprint } from '../store/appStore';
 import { syncSprintStatuses } from '../lib/sprintLifecycle';
-import KanbanColumn from '../components/KanbanColumn';
+import SprintBoardColumn from '../components/SprintBoardColumn';
 import PointsPicker from '../components/PointsPicker';
 import type { TicketStatus, Points, Ticket } from '../types';
 
-export default function KanbanPage() {
+export default function SprintBoardPage() {
   const { moveTicket, createDraftSprint, addTicket, settings, updateSprint, updateTicket, deleteTicket } = useAppStore();
   const state = useAppStore.getState();
   const activeSprint = selectActiveSprint(state);
@@ -26,12 +26,6 @@ export default function KanbanPage() {
     syncSprintStatuses();
   }, []);
 
-  useEffect(() => {
-    if (activeSprint) {
-      setEditStartDate(activeSprint.startDate);
-      setEditEndDate(activeSprint.endDate);
-    }
-  }, [activeSprint?.id]);
 
   const handleCreateSprint = () => {
     createDraftSprint({ startDate: sprintStartDate, lengthDays: settings.sprintLengthDays });
@@ -142,7 +136,11 @@ export default function KanbanPage() {
                 {format(new Date(activeSprint.startDate), 'MMM d')} – {format(new Date(activeSprint.endDate), 'MMM d')}
               </h1>
               <button
-                onClick={() => setIsEditingDates(true)}
+                onClick={() => {
+                setIsEditingDates(true);
+                setEditStartDate(activeSprint.startDate);
+                setEditEndDate(activeSprint.endDate);
+              }}
                 className="text-sm text-slate-600 hover:text-blue-600 px-3 py-1 rounded hover:bg-slate-100 transition"
               >
                 ✏️ Edit Dates
@@ -216,7 +214,7 @@ export default function KanbanPage() {
       >
         <div className="flex gap-4">
           {statusesInOrder.map((status) => (
-            <KanbanColumn
+            <SprintBoardColumn
               key={status}
               status={status}
               label={statusLabels[status]}

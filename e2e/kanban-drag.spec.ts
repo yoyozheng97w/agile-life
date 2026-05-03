@@ -9,7 +9,7 @@ import {
   todayISO,
 } from './helpers/store';
 
-test.describe('Kanban drag-and-drop', () => {
+test.describe('Sprint Board drag-and-drop', () => {
   test.describe.configure({ retries: 2 });
 
   test('dragging a ticket from To-Do to Done updates status and points', async ({ page }) => {

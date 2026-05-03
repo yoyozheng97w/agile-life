@@ -17,8 +17,11 @@ export default function HistoryPage() {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
 
   const filteredSprints = useMemo(() => {
     const filtered = completedSprints.filter((sprint) => {
@@ -50,7 +53,7 @@ export default function HistoryPage() {
     });
 
     return filtered;
-  }, [completedSprints, filterMode, customFrom, customTo]);
+  }, [completedSprints, filterMode, customFrom, customTo, today]);
 
   const chartData = filteredSprints.map((sprint) => ({
     sprint: `${format(new Date(sprint.startDate), 'MMM d')} – ${format(new Date(sprint.endDate), 'MMM d')}`,

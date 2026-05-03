@@ -37,9 +37,9 @@ src/
 │   └── notificationScheduler.ts # 每日站立通知（30s polling）
 ├── components/
 │   ├── TicketCard.tsx           # 可拖曳票卡 + 右鍵選單
-│   └── KanbanColumn.tsx         # 可放置欄位 + inline 建票
+│   └── SprintBoardColumn.tsx    # 可放置欄位 + inline 建票
 └── pages/
-    ├── KanbanPage.tsx           # 看板主頁 + sprint 建立
+    ├── SprintBoardPage.tsx      # Sprint Board 主頁 + sprint 建立
     ├── HistoryPage.tsx          # 速度圖表 + 日期篩選
     ├── RetroPage.tsx            # 回顧筆記
     └── SettingsPage.tsx         # 設定頁

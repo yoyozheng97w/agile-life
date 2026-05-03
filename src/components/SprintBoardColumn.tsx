@@ -5,7 +5,7 @@ import type { Ticket, TicketStatus, Points } from '../types';
 import TicketCard from './TicketCard';
 import PointsPicker from './PointsPicker';
 
-interface KanbanColumnProps {
+interface SprintBoardColumnProps {
   status: TicketStatus;
   label: string;
   tickets: Ticket[];
@@ -23,7 +23,7 @@ const statusColors: Record<TicketStatus, string> = {
   done: 'bg-green-100',
 };
 
-export default function KanbanColumn({
+export default function SprintBoardColumn({
   status,
   label,
   tickets,
@@ -32,7 +32,7 @@ export default function KanbanColumn({
   onDeleteTicket,
   onEdit,
   onDelete,
-}: KanbanColumnProps) {
+}: SprintBoardColumnProps) {
   const { setNodeRef } = useDroppable({ id: status });
   const ticketIds = tickets.map((t) => t.id);
   const [showAddForm, setShowAddForm] = useState(false);

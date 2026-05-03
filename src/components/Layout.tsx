@@ -4,7 +4,7 @@ export default function Layout() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Kanban', icon: '📋' },
+    { path: '/', label: 'Sprint Board', icon: '📋' },
     { path: '/history', label: 'History', icon: '📈' },
     { path: '/retro', label: 'Retrospective', icon: '💭' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },

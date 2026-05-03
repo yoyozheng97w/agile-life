@@ -15,7 +15,7 @@ async function setupActiveSprint(page: import('@playwright/test').Page): Promise
   return sprint;
 }
 
-test.describe('Ticket CRUD on Kanban', () => {
+test.describe('Ticket CRUD on Sprint Board', () => {
   test('Add Ticket button is only visible on To-Do column', async ({ page }) => {
     await setupActiveSprint(page);
 
