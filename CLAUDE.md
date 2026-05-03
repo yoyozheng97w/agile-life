@@ -1,90 +1,68 @@
-# 🚀 Agile Life Manager - Project Context
+# Agile Life Manager - Project Context
 
 **Project**: Personal Scrum/Kanban web app for managing life with agile methodology
 
 **Tech Stack**: React 19 + TypeScript + Vite + Zustand + Tailwind + dnd-kit + Recharts
 
-**Status**: MVP phase — core features implemented, testing protocol established
+**Status**: Core features complete — sprint lifecycle, Kanban, retrospectives, velocity charts, E2E suite (63 tests)
 
 ---
 
-## 📌 Critical Project Info
+## Architecture Decisions
 
-### Architecture Decisions
+These are load-bearing choices. Don't change without a plan.
 
 1. **Single Zustand Store** (not separate stores)
-   - Why: Atomic writes to localStorage (avoid torn writes)
-   - Location: `src/store/appStore.ts`
-   - Three slices: settings, sprints, tickets
-   - Persisted under key: `agile-life-app/v1`
+   - Why: Atomic writes to localStorage — separate stores cause torn writes
+   - Location: `src/store/appStore.ts` with slices in `src/store/slices/`
+   - Three slices: `settingsSlice`, `sprintsSlice`, `ticketsSlice`
+   - Persisted under key: `agile-life-app/v1` — changing this orphans all user data
 
 2. **Notification Strategy** (30s polling, not setTimeout)
-   - Why: Survives laptop sleep, DST, clock changes
+   - Why: Survives laptop sleep, DST, and clock changes — setTimeout does not
    - Location: `src/lib/notificationScheduler.ts`
    - Grace window: 5 minutes after standup time
    - Fires once per day via `lastStandupNotified` check
 
-3. **Drag-and-Drop Implementation** (dnd-kit)
-   - Uses `useDraggable` on TicketCard + `useDroppable` on columns
+3. **Drag-and-Drop** (dnd-kit)
+   - `useDraggable` on TicketCard + `useDroppable` on columns
    - `SortableContext` wraps tickets in each column
-   - collision detection: `closestCorners`
+   - Collision detection: `closestCorners`
 
-4. **Sprint Lifecycle** (automatic status transitions + carry-over)
-   - Sprints transition automatically based on dates via `syncSprintStatuses()`
+4. **Sprint Lifecycle** (automatic transitions + carry-over)
+   - Runs via `syncSprintStatuses()` called on app mount
    - `planning` → `active`: when today ≥ startDate
    - `active` → `completed`: when today > endDate
-   - On close: mark completed, snapshot completedPoints, clone incomplete tickets to new sprint
-   - Sets `carriedFromSprintId` flag on carried tickets
+   - On close: snapshot `completedPoints`, clone incomplete tickets to new sprint with `carriedFromSprintId`
    - Location: `src/lib/sprintLifecycle.ts`
 
----
-
-## 🗂️ Key Files (Read These First)
-
-| File | Purpose | Critical? |
-|------|---------|-----------|
-| `src/types.ts` | All TypeScript interfaces | ✅ YES — master schema |
-| `src/store/appStore.ts` | Zustand store + persist config | ✅ YES — all state |
-| `src/components/TicketCard.tsx` | Draggable ticket element with menu | ✅ YES — Kanban core |
-| `src/components/KanbanColumn.tsx` | Droppable column + inline ticket creation | ✅ YES — Kanban core |
-| `src/pages/KanbanPage.tsx` | Active sprint board + sprint creation | ✅ YES — main feature |
-| `src/pages/HistoryPage.tsx` | Velocity charts + date filtering + edit | ✅ YES — analytics |
-| `src/pages/RetroPage.tsx` | Retrospective notes per sprint | ✅ YES — reflection |
-| `src/lib/sprintLifecycle.ts` | Auto status sync + close + carry over | ✅ YES — data mutation |
-| `src/lib/notificationScheduler.ts` | Daily standup reminders | ✅ YES — background task |
-| `.claude/agents/qa-engineer.md` | QA agent definition + test protocol | ✅ YES — validation rules |
-| `e2e/` | Playwright E2E test suite (63 tests) | ✅ YES — automated testing |
+5. **completedAt is set once**
+   - Set on first move to Done; subsequent Done re-entries do NOT overwrite
+   - Location: `src/store/slices/ticketsSlice.ts:65-67`
 
 ---
 
-## 🎯 Known Gotchas
+## Key Files
 
-1. **localStorage requires proper origin context**
-   - In tests, must call `page.goto()` BEFORE accessing localStorage
-   - Raw `localStorage.clear()` may fail; wrap in try-catch
-
-2. **Drag-and-drop is browser-specific**
-   - PointerSensor without distance config works fine
-   - Manual browser testing required; E2E Playwright is flaky for dnd-kit
-
-3. **Automatic sprint status transitions**
-   - Sprints auto-transition via `syncSprintStatuses()` called on app mount
-   - When today > endDate, sprint auto-closes and carry-over logic runs
-   - For testing, set endDate to yesterday in DevTools, then refresh to trigger transition
-
-4. **Complete at Most Once**
-   - `completedAt` is set ONCE on first move to Done
-   - Subsequent Done re-entries do NOT overwrite
-   - See `src/store/slices/ticketsSlice.ts` line 65-67
-
-5. **UUID Generation Bug History**
-   - Previously: `crypto.getRandomValues(new Uint8Array(16)).toString()` ❌ (produces "[object Uint8Array]")
-   - Fixed to: `uuid()` from 'uuid' package ✅
-   - Applies to: `src/lib/sprintLifecycle.ts`
+| File | Purpose |
+|------|---------|
+| `src/types.ts` | All TypeScript interfaces — master schema |
+| `src/store/appStore.ts` | Zustand store + persist config |
+| `src/store/slices/` | State logic split by domain (settings / sprints / tickets) |
+| `src/components/TicketCard.tsx` | Draggable ticket element with context menu |
+| `src/components/KanbanColumn.tsx` | Droppable column + inline ticket creation |
+| `src/pages/KanbanPage.tsx` | Active sprint board + sprint creation |
+| `src/pages/HistoryPage.tsx` | Velocity charts + date filtering |
+| `src/pages/RetroPage.tsx` | Retrospective notes per sprint |
+| `src/pages/SettingsPage.tsx` | Sprint length + standup time + notifications |
+| `src/lib/sprintLifecycle.ts` | Auto status sync + close + carry-over |
+| `src/lib/notificationScheduler.ts` | Daily standup reminder scheduler |
+| `.claude/agents/qa-engineer.md` | QA agent definition + test protocol |
+| `e2e/` | Playwright E2E test suite |
 
 ---
 
-## 📊 Data Schema
+## Data Schema
 
 ```typescript
 localStorage['agile-life-app/v1'] = {
@@ -101,17 +79,17 @@ localStorage['agile-life-app/v1'] = {
     status: "active" | "planning" | "completed",
     plannedPoints: 16,
     completedPoints: 8,
-    retrospective?: "Retrospective notes for this sprint"
+    retrospective?: "string"
   }],
   tickets: [{
     id: uuid,
-    title: "Feature name",
-    description?: "Optional details",
+    title: "string",
+    description?: "string",
     points: 1|2|3|5|8|13|21,
     status: "todo"|"doing"|"blocking"|"done",
     sprintId: uuid,
-    createdAt: "2026-04-29T10:30:00.000Z",
-    completedAt?: "2026-04-29T15:45:00.000Z",
+    createdAt: "ISO8601",
+    completedAt?: "ISO8601",
     carriedFromSprintId?: uuid
   }]
 }
@@ -119,88 +97,57 @@ localStorage['agile-life-app/v1'] = {
 
 ---
 
-## 🔄 Test Before Every Change
+## Known Gotchas
 
-**Non-negotiable**: Follow `.claude/agents/qa-engineer.md`
+1. **localStorage requires proper origin context**
+   - In E2E tests, call `page.goto()` BEFORE accessing localStorage
+   - Raw `localStorage.clear()` may throw; wrap in try-catch
 
-- Level 1: TypeScript compile (2 min) — MUST PASS
-- Level 2: Manual browser tests (10 min) — MUST PASS for changed features
-- Level 3: E2E suite (5 min) — PASS or document known failures
+2. **Drag-and-drop is browser-specific**
+   - PointerSensor without distance config works fine
+   - Playwright E2E is flaky for dnd-kit — always manually test drag in browser
 
-**Example**: Modifying Kanban drag-and-drop?
-→ Must manually test dragging in browser (E2E may timeout on drag)
-→ Must verify `moveTicket` action fires
-→ Must check localStorage updates
-
----
-
-## 🚫 What NOT to Change Without Plan
-
-1. **Zustand store shape** — Will break persistence
-2. **localStorage key** — Will orphan all user data (need migration)
-3. **Ticket.completedAt logic** — Breaks sprint metrics
-4. **Notification scheduler interval** — Affects battery/CPU usage
+3. **Sprint auto-transition timing**
+   - `syncSprintStatuses()` runs on mount — test by setting `endDate` to yesterday in DevTools, then refresh
 
 ---
 
-## 📝 Code Style Rules
+## Code Style
 
-- **Comments**: Only WHY, not WHAT (well-named code is self-documenting)
-- **Imports**: Group by external, then internal
-- **TypeScript**: No `any` types; use proper imports for types
-- **Components**: Keep small; extract custom hooks if logic is complex
-- **State**: Always use Zustand selectors; don't access raw store in render
-
----
-
-## 🎓 Lessons Learned
-
-1. **E2E tests aren't enough** — Always manually verify core UI interactions (drag-drop)
-2. **Atomic writes matter** — Single localStorage key prevents torn writes
-3. **Browser APIs are stateful** — Notification, localStorage, permissions need context awareness
-4. **Selector complexity** — Avoid deeply nested Zustand selectors; use helper functions
+- **Comments**: Only WHY, never WHAT
+- **Imports**: External first, then internal
+- **TypeScript**: No `any`; use type imports (`import type`)
+- **Components**: Keep small; extract hooks when logic is complex
+- **State**: Always use Zustand selectors; never access raw store in render
 
 ---
 
-## 🆘 Quick Debug Commands
+## Testing Protocol
+
+Follow `.claude/agents/qa-engineer.md` before every change.
+
+- **Level 1** — `npx tsc -b` — MUST PASS
+- **Level 2** — Manual browser verification of changed features — MUST PASS
+- **Level 3** — `npm run test:e2e` — PASS or document known failures
+
+Never proceed if TypeScript fails, drag-and-drop breaks, or localStorage stops persisting.
+
+---
+
+## Quick Debug
 
 ```bash
-# Check TypeScript errors
-npx tsc -b
+npx tsc -b                  # TypeScript check
+npm run test:e2e             # E2E suite
+npx playwright show-report   # Open HTML test report
+npm run dev                  # Start dev server
+```
 
-# Run E2E tests
-npm run test:e2e
-
-# View HTML test report
-npx playwright show-report
-
-# Hard refresh (Ctrl+Shift+R equivalent)
-F12 → Network → Disable cache → Refresh
-
-# Check localStorage
-F12 → Application → Local Storage → find 'agile-life-app/v1'
-
-# Inspect dragging
-F12 → Elements → hover over ticket → check data-sortable-id attribute
+```
+F12 → Application → Local Storage → agile-life-app/v1   # inspect state
+F12 → Network → Disable cache → Refresh                  # hard refresh
 ```
 
 ---
 
-## 📞 When Subagent Tests Fail
-
-**If subagent reports test failure:**
-
-1. Read `.claude/test-protocol.md` Level 1-3 sections
-2. Check the exact error message (file:line)
-3. Reproduce locally: `npm run dev` + browser F12
-4. Fix the issue, re-test manually, then have subagent re-verify
-
-**Never proceed if:**
-- ❌ TypeScript doesn't compile
-- ❌ Drag-and-drop broken in browser
-- ❌ localStorage not persisting
-
----
-
-**Last Updated**: 2026-04-30
-**Maintained By**: Claude Code
+**Last Updated**: 2026-05-03

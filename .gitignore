@@ -12,8 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Build and test artifacts
+# Build and test artifacts (.artifacts/ covers all generated files)
 .artifacts/
+# Playwright default fallback paths (in case config is bypassed)
 test-results/
 playwright-report/
 .tsbuildinfo
