@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Agile Life Manager** 是個人敏捷管理 Web 應用，讓使用者以 Scrum/Kanban 方式管理日常生活任務。核心功能包含 Sprint 生命週期自動管理、Kanban 拖曳看板、回顧紀錄、速度趨勢圖表，以及每日站立提醒通知。所有資料持久化於 localStorage，無後端。
+**Agile Life Manager** 是個人敏捷管理 Web 應用，以 Scrum 框架管理日常生活任務。核心功能包含 Sprint 生命週期自動管理、Sprint Board 拖曳看板、回顧紀錄、速度趨勢圖表，以及每日站立提醒通知。所有資料持久化於 localStorage，無後端。
 
 ---
 
@@ -47,6 +47,18 @@ src/
 
 **Sprint 狀態機**：`planning → active`（today ≥ startDate）→ `completed`（today > endDate）  
 轉換由 `syncSprintStatuses()` 在 app mount 時執行。
+
+---
+
+## Subagents
+
+專責代理位於 `.claude/agents/`，所有代理皆為唯讀（不得修改程式碼）。
+
+| Agent | 何時使用 |
+|-------|---------|
+| `qa-engineer.md` | 程式碼改動後驗證功能正確性：TypeScript 編譯 → E2E 測試 → 手動測試清單 |
+| `code-reviewer.md` | commit 前審查 diff，確認符合 TypeScript、Zustand、註解等規範 |
+| `security-reviewer.md` | 新功能合入前或定期審查：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
 
 ---
 
