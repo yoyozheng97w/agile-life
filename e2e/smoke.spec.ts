@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { BASE_URL, gotoFresh, expectNoConsoleErrors } from './helpers/store';
+import { BASE_URL, gotoFresh, gotoSeeded, buildState, buildSprint, todayISO, expectNoConsoleErrors } from './helpers/store';
 
 test.describe('Smoke - app loads and routes work', () => {
   test('app boots with sidebar and four nav links', async ({ page }) => {
@@ -44,6 +44,16 @@ test.describe('Smoke - app loads and routes work', () => {
       await gotoFresh(page);
       await expect(page.getByRole('heading', { name: 'Agile Life' })).toBeVisible();
     });
+  });
+
+  test('active Sprint Board shows all four columns', async ({ page }) => {
+    const sprint = buildSprint({ startDate: todayISO(), endDate: todayISO(13) });
+    await gotoSeeded(page, buildState({ sprints: [sprint] }));
+
+    await expect(page.getByRole('heading', { name: /^To-Do/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Doing/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Blocking/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Done/ })).toBeVisible();
   });
 
   test('empty state on Sprint Board prompts to create a sprint', async ({ page }) => {

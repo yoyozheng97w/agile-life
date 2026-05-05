@@ -89,6 +89,19 @@ test.describe('Sprint Board drag-and-drop', () => {
     }, { timeout: 5000 }).toBe('blocking');
   });
 
+  test('dragging a ticket back to To-Do resets its status', async ({ page }) => {
+    const sprint = buildSprint({ startDate: todayISO(), endDate: todayISO(13) });
+    const ticket = buildTicket({ sprintId: sprint.id, title: 'Reset me', status: 'doing' });
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets: [ticket] }));
+
+    await dragTicketTo(page, 'Reset me', 'To-Do');
+
+    await expect.poll(async () => {
+      const store = await readStore(page);
+      return store?.tickets[0]?.status;
+    }, { timeout: 5000 }).toBe('todo');
+  });
+
   test('drag persists across hard refresh', async ({ page }) => {
     const sprint = buildSprint({ startDate: todayISO(), endDate: todayISO(13) });
     const ticket = buildTicket({

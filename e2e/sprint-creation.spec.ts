@@ -106,6 +106,15 @@ test.describe('Sprint creation', () => {
     }).toBe(todayISO(20));
   });
 
+  test('Edit Dates - Save is disabled when end date is before start date', async ({ page }) => {
+    const sprint = buildSprint({ startDate: todayISO(), endDate: todayISO(13) });
+    await gotoSeeded(page, buildState({ sprints: [sprint] }));
+
+    await page.getByRole('button', { name: /Edit Dates/ }).click();
+    await page.locator('input[type="date"]').nth(1).fill(todayISO(-1));
+    await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
   test('Edit Dates Cancel reverts the form without saving', async ({ page }) => {
     const sprint = buildSprint({ startDate: todayISO(), endDate: todayISO(13) });
     await gotoSeeded(page, buildState({ sprints: [sprint] }));

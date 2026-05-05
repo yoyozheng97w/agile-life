@@ -52,12 +52,12 @@ src/
 
 ## Subagents
 
-專責代理位於 `.claude/agents/`，所有代理皆為唯讀（不得修改程式碼）。
+專責代理位於 `.claude/agents/`。
 
 | Agent | 何時使用 |
 |-------|---------|
 | `qa-engineer.md` | 程式碼改動後驗證功能正確性：TypeScript 編譯 → E2E 測試 → 手動測試清單 |
-| `code-reviewer.md` | commit 前審查 diff，確認符合 TypeScript、Zustand、註解等規範 |
+| `code-reviewer.md` | commit 前審查 diff；可自動修低風險問題（`import type`、WHAT 注釋），invariant 問題回報 BLOCKED |
 | `security-reviewer.md` | 新功能合入前或定期審查：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
 
 ---

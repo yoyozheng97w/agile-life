@@ -12,9 +12,15 @@ import PointsPicker from '../components/PointsPicker';
 import type { TicketStatus, Points, Ticket } from '../types';
 
 export default function SprintBoardPage() {
-  const { moveTicket, createDraftSprint, addTicket, settings, updateSprint, updateTicket, deleteTicket } = useAppStore();
-  const state = useAppStore.getState();
-  const activeSprint = selectActiveSprint(state);
+  const moveTicket = useAppStore((s) => s.moveTicket);
+  const createDraftSprint = useAppStore((s) => s.createDraftSprint);
+  const addTicket = useAppStore((s) => s.addTicket);
+  const settings = useAppStore((s) => s.settings);
+  const updateSprint = useAppStore((s) => s.updateSprint);
+  const updateTicket = useAppStore((s) => s.updateTicket);
+  const deleteTicket = useAppStore((s) => s.deleteTicket);
+  const activeSprint = useAppStore((s) => selectActiveSprint(s));
+  const sprintTickets = useAppStore((s) => selectTicketsForSprint(activeSprint?.id ?? '')(s));
   const [sprintStartDate, setSprintStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [showSprintForm, setShowSprintForm] = useState(false);
   const [isEditingDates, setIsEditingDates] = useState(false);
@@ -90,7 +96,6 @@ export default function SprintBoardPage() {
     );
   }
 
-  const sprintTickets = selectTicketsForSprint(activeSprint.id)(state);
   const statusesInOrder: TicketStatus[] = ['todo', 'doing', 'blocking', 'done'];
   const statusLabels: Record<TicketStatus, string> = {
     todo: 'To-Do',
@@ -189,7 +194,8 @@ export default function SprintBoardPage() {
             <div className="flex gap-2">
               <button
                 onClick={handleSaveDates}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                disabled={editEndDate < editStartDate}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save
               </button>
