@@ -7,28 +7,5 @@
       "Bash(npm run test:e2e)",
       "Bash(npx playwright show-report)"
     ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "agent",
-            "if": "Bash(git commit*)",
-            "prompt": "你是 Agile Life Manager 的 code reviewer。執行 `git diff --staged` 審查所有 staged 變更。\n\n只檢查以下 CRITICAL invariants（任一違規即阻擋）：\n- 新增了第二個 Zustand store\n- 修改了 localStorage key（agile-life-app/v1）\n- 覆寫了 completedAt（ticketsSlice.ts 第 65-67 行的邏輯）\n\n若無 CRITICAL 問題，只輸出：{\"continue\": true}\n若有 CRITICAL 問題，只輸出：{\"continue\": false, \"stopReason\": \"BLOCKED by code-reviewer: [具體說明]\"}",
-            "timeout": 120,
-            "statusMessage": "Code review 中..."
-          },
-          {
-            "type": "agent",
-            "if": "Bash(git commit*)",
-            "prompt": "你是 Agile Life Manager 的 security reviewer。執行 `git diff --staged` 審查所有 staged 變更。\n\n只檢查以下 CRITICAL 安全問題（任一發現即阻擋）：\n- dangerouslySetInnerHTML 使用\n- eval() 呼叫\n- innerHTML 直接插入使用者輸入\n- 敏感資料（密碼、token、password）寫入 localStorage\n\n若無 CRITICAL 安全問題，只輸出：{\"continue\": true}\n若有 CRITICAL 安全問題，只輸出：{\"continue\": false, \"stopReason\": \"BLOCKED by security-reviewer: [具體說明]\"}",
-            "timeout": 120,
-            "statusMessage": "Security review 中..."
-          }
-        ]
-      }
-    ]
   }
 }

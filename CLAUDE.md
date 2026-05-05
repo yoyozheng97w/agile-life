@@ -105,6 +105,7 @@ const store = useAppStore();
 - 拖曳功能**必須在瀏覽器手動測試**，不能只靠 E2E
 - Comment 只寫 WHY（為什麼這樣做），不寫 WHAT（做了什麼）
 - 匯入純型別時使用 `import type`
+- **`git commit` 前必須依序執行 `code-reviewer` 和 `security-reviewer` subagents**；任一回報 BLOCKED 就停止，不得繞過
 
 ### NEVER
 - **NEVER 拆 Zustand store**：多個 store 對 localStorage 的寫入不是原子操作，會造成 torn write
