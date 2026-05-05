@@ -19,8 +19,8 @@ model: sonnet
 ### 第一步：取得變更範圍
 
 ```bash
-git diff --name-only HEAD
-git diff HEAD
+git diff --staged --name-only
+git diff --staged
 ```
 
 如果呼叫方有指定特定檔案或 commit range，以那個為準。

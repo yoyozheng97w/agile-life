@@ -32,6 +32,14 @@ fix 後重跑 `npm audit --audit-level=moderate` 確認剩餘問題。
 
 ## 掃描流程
 
+### 第零步：取得本次變更範圍（供參考）
+
+```bash
+git diff --staged --name-only
+```
+
+掃描仍針對整個 `src/`，但優先重點審查變更的檔案。
+
 ### 第一步：XSS 風險
 
 ```bash

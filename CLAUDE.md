@@ -54,11 +54,13 @@ src/
 
 專責代理位於 `.claude/agents/`。
 
+推薦流程：`stage → code review → security review → commit → push`
+
 | Agent | 何時使用 |
 |-------|---------|
 | `qa-engineer.md` | 程式碼改動後驗證功能正確性：TypeScript 編譯 → E2E 測試 → 手動測試清單 |
-| `code-reviewer.md` | commit 前審查 diff；可自動修低風險問題（`import type`、WHAT 注釋），invariant 問題回報 BLOCKED |
-| `security-reviewer.md` | 新功能合入前或定期審查：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
+| `code-reviewer.md` | commit **前**審查（`git diff --staged`）；可自動修低風險問題（`import type`、WHAT 注釋），invariant 問題回報 BLOCKED |
+| `security-reviewer.md` | commit **前**掃描（`git diff --staged`）：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
 
 ---
 
@@ -66,7 +68,7 @@ src/
 
 ### Validation (Run After Every Change)
 - `npx tsc -b` — TypeScript 型別檢查，**MUST PASS**
-- `npm run test:e2e` — Playwright E2E（63 tests）
+- `npm run test:e2e` — Playwright E2E
 - `npx playwright show-report` — 查看 E2E HTML 報告
 
 ### Development
