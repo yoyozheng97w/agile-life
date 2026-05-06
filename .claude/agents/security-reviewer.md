@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: 掃描 Agile Life Manager 的安全風險，包含 XSS、不安全的使用者輸入處理、敏感資料暴露與依賴漏洞。適合在新功能合入前或定期審查時使用。
+description: 掃描 Agile Life Manager 的安全風險，包含 XSS、不安全的使用者輸入處理、敏感資料暴露與依賴漏洞。在 commit 前使用。
 tools: Bash, Read, Glob, Grep, Edit
 color: yellow
 model: sonnet

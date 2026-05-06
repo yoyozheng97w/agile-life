@@ -106,6 +106,7 @@ const store = useAppStore();
 - Comment 只寫 WHY（為什麼這樣做），不寫 WHAT（做了什麼）
 - 匯入純型別時使用 `import type`
 - **`git commit` 前必須依序執行 `code-reviewer` 和 `security-reviewer` subagents**；任一回報 BLOCKED 就停止，不得繞過
+- **E2E 測試必須交給 `qa-engineer` subagent 執行**；不得自己直接跑 `npm run test:e2e`
 
 ### NEVER
 - **NEVER 拆 Zustand store**：多個 store 對 localStorage 的寫入不是原子操作，會造成 torn write
@@ -113,6 +114,7 @@ const store = useAppStore();
 - **NEVER 用 `any`**：型別不確定時用 `unknown` + type narrowing
 - **NEVER 覆寫 `completedAt`**：只在第一次進入 `done` 時設定，邏輯在 `ticketsSlice.ts:65-67`
 - **NEVER 在 E2E 的 `page.goto()` 前存取 localStorage**：未初始化 origin 會 throw
+- **NEVER 自己執行 E2E 或驗收測試**：一律透過 `qa-engineer` subagent
 
 ---
 

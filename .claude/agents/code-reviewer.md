@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: 審查 Agile Life Manager 的程式碼變更，確認符合專案規範。適合在 commit 前或 PR 合併前使用。
+description: 審查 Agile Life Manager 的程式碼變更，確認符合專案規範。在 commit 前使用。
 tools: Bash, Read, Glob, Grep, Edit
 color: red
 model: sonnet
