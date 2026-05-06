@@ -6,7 +6,7 @@ export default function Layout() {
   const navItems = [
     { path: '/', label: 'Sprint Board', icon: '📋' },
     { path: '/history', label: 'History', icon: '📈' },
-    { path: '/retro', label: 'Retrospective', icon: '💭' },
+    { path: '/retro', label: 'Retro', icon: '💭' },
     { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 

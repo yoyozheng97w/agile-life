@@ -18,7 +18,7 @@ test.describe('Sprint creation', () => {
     await gotoFresh(page);
     await page.getByRole('button', { name: /Create New Sprint/ }).click();
 
-    await expect(page.locator('input[type="date"]')).toBeVisible();
+    await expect(page.locator('input[type="date"]').first()).toBeVisible();
     await expect(page.getByRole('button', { name: /^Create Sprint$/ })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
@@ -52,7 +52,7 @@ test.describe('Sprint creation', () => {
   test('creating a sprint dated today transitions it to active automatically', async ({ page }) => {
     await gotoFresh(page);
     await page.getByRole('button', { name: /Create New Sprint/ }).click();
-    await page.locator('input[type="date"]').fill(todayISO());
+    await page.locator('input[type="date"]').first().fill(todayISO());
     await page.getByRole('button', { name: /^Create Sprint$/ }).click();
 
     await expect.poll(async () => {
@@ -67,7 +67,7 @@ test.describe('Sprint creation', () => {
   test('a future-dated sprint stays in planning status', async ({ page }) => {
     await gotoFresh(page);
     await page.getByRole('button', { name: /Create New Sprint/ }).click();
-    await page.locator('input[type="date"]').fill(todayISO(30));
+    await page.locator('input[type="date"]').first().fill(todayISO(30));
     await page.getByRole('button', { name: /^Create Sprint$/ }).click();
 
     await expect.poll(async () => {
@@ -79,7 +79,7 @@ test.describe('Sprint creation', () => {
   test('persisted sprint has correct number and zero points initially', async ({ page }) => {
     await gotoFresh(page);
     await page.getByRole('button', { name: /Create New Sprint/ }).click();
-    await page.locator('input[type="date"]').fill(todayISO());
+    await page.locator('input[type="date"]').first().fill(todayISO());
     await page.getByRole('button', { name: /^Create Sprint$/ }).click();
 
     await expect.poll(async () => (await readStore(page))?.sprints.length).toBe(1);

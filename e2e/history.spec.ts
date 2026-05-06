@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   BASE_URL,
   buildSprint,
+  buildTicket,
   buildState,
   gotoFresh,
   gotoSeeded,
@@ -194,5 +195,83 @@ test.describe('History page', () => {
     await page.goto(BASE_URL + '/history', { waitUntil: 'networkidle' });
     await expect(page.locator('table tbody tr')).toHaveCount(1);
     await expect(page.locator('table tbody tr').first()).toContainText('16');
+  });
+
+  test('Planned column derives from tickets when sprint.plannedPoints is 0', async ({ page }) => {
+    // sprint.plannedPoints intentionally left at 0 (the pre-fix default)
+    const sprint = buildSprint({
+      status: 'completed',
+      startDate: `${APR}-01`,
+      endDate: `${APR}-14`,
+      plannedPoints: 0,
+      completedPoints: 0,
+    });
+    const tickets = [
+      buildTicket({ sprintId: sprint.id, points: 5, status: 'done' }),
+      buildTicket({ sprintId: sprint.id, points: 3, status: 'todo' }),
+      buildTicket({ sprintId: sprint.id, points: 8, status: 'doing' }),
+    ];
+    // planned = 5+3+8 = 16, completed (done only) = 5
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets }), '/history');
+
+    const row = page.locator('table tbody tr').first();
+    // Planned column must show 16, not 0
+    await expect(row.locator('td').nth(1)).toContainText('16');
+    // Completed column must show only done-ticket points: 5
+    await expect(row.locator('td').nth(2)).toContainText('5');
+    // Completion rate: 5/16 = 31%
+    await expect(row.locator('td').nth(3)).toContainText('31%');
+  });
+
+  test('Edit form initial Planned value derives from tickets when sprint.plannedPoints is 0', async ({ page }) => {
+    const sprint = buildSprint({
+      status: 'completed',
+      startDate: `${APR}-01`,
+      endDate: `${APR}-14`,
+      plannedPoints: 0,
+      completedPoints: 0,
+    });
+    const tickets = [
+      buildTicket({ sprintId: sprint.id, points: 2, status: 'done' }),
+      buildTicket({ sprintId: sprint.id, points: 13, status: 'blocking' }),
+    ];
+    // planned from tickets = 2+13 = 15, completed = 2
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets }), '/history');
+
+    const row = page.locator('table tbody tr').first();
+    await row.getByRole('button', { name: 'Edit' }).click();
+
+    const inputs = row.locator('input[type="number"]');
+    // First number input = Planned; must be pre-filled with 15, not 0
+    await expect(inputs.nth(0)).toHaveValue('15');
+    // Second number input = Completed; must be pre-filled with 2
+    await expect(inputs.nth(1)).toHaveValue('2');
+  });
+
+  test('Planned vs Completed chart shows non-zero Planned bar when sprint.plannedPoints is 0', async ({ page }) => {
+    const sprint = buildSprint({
+      status: 'completed',
+      startDate: `${APR}-01`,
+      endDate: `${APR}-14`,
+      plannedPoints: 0,
+      completedPoints: 0,
+    });
+    const tickets = [
+      buildTicket({ sprintId: sprint.id, points: 8, status: 'done' }),
+      buildTicket({ sprintId: sprint.id, points: 5, status: 'todo' }),
+    ];
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets }), '/history');
+
+    // The BarChart for "Planned vs Completed" must be present
+    await expect(page.getByRole('heading', { name: 'Planned vs Completed' })).toBeVisible();
+
+    // Recharts renders bar rectangles; at least one bar must have a non-zero height,
+    // confirming the "Planned" data key resolved to 13 (8+5) rather than 0.
+    const bars = page.locator('.recharts-bar-rectangle');
+    await expect(bars.first()).toBeVisible();
+
+    // Cross-check via table: Planned cell must show 13
+    const row = page.locator('table tbody tr').first();
+    await expect(row.locator('td').nth(1)).toContainText('13');
   });
 });

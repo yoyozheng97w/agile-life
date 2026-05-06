@@ -179,3 +179,45 @@ test.describe('Sprint lifecycle - automatic transitions', () => {
     expect(store!.sprints).toHaveLength(1);
   });
 });
+
+test.describe('Sprint Board - dynamic points display from tickets', () => {
+  test('Planned points is the sum of all sprint tickets regardless of sprint.plannedPoints', async ({ page }) => {
+    // sprint.plannedPoints is 0 (the initial default) — the UI must derive the value from tickets
+    const sprint = buildSprint({
+      status: 'active',
+      startDate: todayISO(),
+      endDate: todayISO(13),
+      plannedPoints: 0,
+    });
+    const t1 = buildTicket({ sprintId: sprint.id, points: 5, status: 'todo' });
+    const t2 = buildTicket({ sprintId: sprint.id, points: 3, status: 'doing' });
+    const t3 = buildTicket({ sprintId: sprint.id, points: 8, status: 'done', completedAt: new Date().toISOString() });
+
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets: [t1, t2, t3] }), '/');
+
+    // 5 + 3 + 8 = 16
+    await expect(page.locator('text=Planned:').locator('..')).toContainText('16 points');
+  });
+
+  test('Completed points counts only done tickets', async ({ page }) => {
+    const sprint = buildSprint({
+      status: 'active',
+      startDate: todayISO(),
+      endDate: todayISO(13),
+      plannedPoints: 0,
+      completedPoints: 0,
+    });
+    const todo   = buildTicket({ sprintId: sprint.id, points: 5,  status: 'todo' });
+    const doing  = buildTicket({ sprintId: sprint.id, points: 3,  status: 'doing' });
+    const blocking = buildTicket({ sprintId: sprint.id, points: 2, status: 'blocking' });
+    const done1  = buildTicket({ sprintId: sprint.id, points: 8,  status: 'done', completedAt: new Date().toISOString() });
+    const done2  = buildTicket({ sprintId: sprint.id, points: 13, status: 'done', completedAt: new Date().toISOString() });
+
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets: [todo, doing, blocking, done1, done2] }), '/');
+
+    // Planned = 5+3+2+8+13 = 31
+    await expect(page.locator('text=Planned:').locator('..')).toContainText('31 points');
+    // Completed = 8+13 = 21 (only done tickets)
+    await expect(page.locator('text=Completed:').locator('..')).toContainText('21');
+  });
+});

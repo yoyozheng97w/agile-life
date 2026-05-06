@@ -10,7 +10,7 @@ test.describe('Smoke - app loads and routes work', () => {
     const nav = page.getByRole('navigation');
     await expect(nav.getByRole('link', { name: /Sprint Board/ })).toBeVisible();
     await expect(nav.getByRole('link', { name: /History/ })).toBeVisible();
-    await expect(nav.getByRole('link', { name: /Retrospective/ })).toBeVisible();
+    await expect(nav.getByRole('link', { name: /Retro/ })).toBeVisible();
     await expect(nav.getByRole('link', { name: /Settings/ })).toBeVisible();
   });
 
@@ -25,7 +25,7 @@ test.describe('Smoke - app loads and routes work', () => {
     await expect(page).toHaveURL(/\/history$/);
     await expect(page.getByRole('heading', { name: 'Sprint History' })).toBeVisible();
 
-    await page.getByRole('link', { name: /Retrospective/ }).click();
+    await page.getByRole('link', { name: /Retro/ }).click();
     await expect(page).toHaveURL(/\/retro$/);
     await expect(page.getByRole('heading', { name: 'Retrospective' })).toBeVisible();
 

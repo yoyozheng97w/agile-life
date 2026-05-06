@@ -7,6 +7,7 @@ import type { Sprint } from '../types';
 export default function HistoryPage() {
   const { updateSprint, deleteSprintAndTickets } = useAppStore();
   const completedSprints = useAppStore(selectCompletedSprints);
+  const tickets = useAppStore((s) => s.tickets);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPlanned, setEditPlanned] = useState<number>(0);
   const [editCompleted, setEditCompleted] = useState<number>(0);
@@ -55,16 +56,28 @@ export default function HistoryPage() {
     return filtered;
   }, [completedSprints, filterMode, customFrom, customTo, today]);
 
-  const chartData = filteredSprints.map((sprint) => ({
-    sprint: `${format(new Date(sprint.startDate), 'MMM d')} – ${format(new Date(sprint.endDate), 'MMM d')}`,
-    planned: sprint.plannedPoints,
-    completed: sprint.completedPoints,
-  }));
+  const getPoints = (sprintId: string) => {
+    const st = tickets.filter((t) => t.sprintId === sprintId);
+    return {
+      planned: st.reduce((sum, t) => sum + t.points, 0),
+      completed: st.filter((t) => t.status === 'done').reduce((sum, t) => sum + t.points, 0),
+    };
+  };
+
+  const chartData = filteredSprints.map((sprint) => {
+    const computed = getPoints(sprint.id);
+    return {
+      sprint: `${format(new Date(sprint.startDate), 'MMM d')} – ${format(new Date(sprint.endDate), 'MMM d')}`,
+      planned: sprint.plannedPoints || computed.planned,
+      completed: sprint.completedPoints || computed.completed,
+    };
+  });
 
   const handleEdit = (sprint: Sprint) => {
     setEditingId(sprint.id);
-    setEditPlanned(sprint.plannedPoints);
-    setEditCompleted(sprint.completedPoints);
+    const computed = getPoints(sprint.id);
+    setEditPlanned(sprint.plannedPoints || computed.planned);
+    setEditCompleted(sprint.completedPoints || computed.completed);
     setEditStartDate(sprint.startDate);
     setEditEndDate(sprint.endDate);
   };
@@ -233,8 +246,9 @@ export default function HistoryPage() {
           <tbody>
             {filteredSprints.map((sprint) => {
               const isEditing = editingId === sprint.id;
-              const displayPlanned = isEditing ? editPlanned : sprint.plannedPoints;
-              const displayCompleted = isEditing ? editCompleted : sprint.completedPoints;
+              const computed = getPoints(sprint.id);
+              const displayPlanned = isEditing ? editPlanned : (sprint.plannedPoints || computed.planned);
+              const displayCompleted = isEditing ? editCompleted : (sprint.completedPoints || computed.completed);
               const rate =
                 displayPlanned > 0
                   ? Math.round((displayCompleted / displayPlanned) * 100)

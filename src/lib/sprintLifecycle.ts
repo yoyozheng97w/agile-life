@@ -12,14 +12,14 @@ export function closeAndCarryOver(sprintId: string) {
   // Get all tickets for this sprint
   const sprintTickets = tickets.filter((t) => t.sprintId === sprintId);
 
-  // Calculate completed points
+  const plannedPoints = sprintTickets.reduce((sum, t) => sum + t.points, 0);
   const completedPoints = sprintTickets
     .filter((t) => t.status === 'done')
     .reduce((sum, t) => sum + t.points, 0);
 
-  // Mark sprint as completed
   updateSprint(sprintId, {
     status: 'completed',
+    plannedPoints,
     completedPoints,
   });
 

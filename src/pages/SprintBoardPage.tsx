@@ -5,7 +5,7 @@ import {
   type DragEndEvent,
   closestCorners,
 } from '@dnd-kit/core';
-import { useAppStore, selectActiveSprint, selectTicketsForSprint } from '../store/appStore';
+import { useAppStore, selectActiveSprint, selectTicketsForSprint, selectPlannedPointsForSprint, selectCompletedPointsForSprint } from '../store/appStore';
 import { syncSprintStatuses } from '../lib/sprintLifecycle';
 import SprintBoardColumn from '../components/SprintBoardColumn';
 import PointsPicker from '../components/PointsPicker';
@@ -21,7 +21,13 @@ export default function SprintBoardPage() {
   const deleteTicket = useAppStore((s) => s.deleteTicket);
   const activeSprint = useAppStore((s) => selectActiveSprint(s));
   const sprintTickets = useAppStore((s) => selectTicketsForSprint(activeSprint?.id ?? '')(s));
+  const plannedPoints = useAppStore((s) => selectPlannedPointsForSprint(activeSprint?.id ?? '')(s));
+  const completedPoints = useAppStore((s) => selectCompletedPointsForSprint(activeSprint?.id ?? '')(s));
+  const computeEndDate = (start: string) =>
+    format(addDays(parseISO(start), Math.max(1, settings.sprintLengthDays) - 1), 'yyyy-MM-dd');
+
   const [sprintStartDate, setSprintStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [sprintEndDate, setSprintEndDate] = useState(() => computeEndDate(format(new Date(), 'yyyy-MM-dd')));
   const [showSprintForm, setShowSprintForm] = useState(false);
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [editStartDate, setEditStartDate] = useState('');
@@ -34,7 +40,7 @@ export default function SprintBoardPage() {
 
 
   const handleCreateSprint = () => {
-    createDraftSprint({ startDate: sprintStartDate, lengthDays: settings.sprintLengthDays });
+    createDraftSprint({ startDate: sprintStartDate, endDate: sprintEndDate });
     syncSprintStatuses();
     setShowSprintForm(false);
   };
@@ -60,20 +66,23 @@ export default function SprintBoardPage() {
                 <input
                   type="date"
                   value={sprintStartDate}
-                  onChange={(e) => setSprintStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setSprintStartDate(e.target.value);
+                    setSprintEndDate(computeEndDate(e.target.value));
+                  }}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900 mb-2">
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
                   End Date
-                </p>
-                <div className="px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700">
-                  {format(
-                    addDays(parseISO(sprintStartDate), Math.max(1, settings.sprintLengthDays) - 1),
-                    'yyyy-MM-dd'
-                  )}
-                </div>
+                </label>
+                <input
+                  type="date"
+                  value={sprintEndDate}
+                  onChange={(e) => setSprintEndDate(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div className="flex gap-2">
                 <button
@@ -103,10 +112,6 @@ export default function SprintBoardPage() {
     blocking: 'Blocking',
     done: 'Done',
   };
-
-  const completedPoints = sprintTickets
-    .filter((t) => t.status === 'done')
-    .reduce((sum, t) => sum + t.points, 0);
 
   const daysRemaining = Math.ceil(
     (new Date(activeSprint.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
@@ -153,7 +158,7 @@ export default function SprintBoardPage() {
             </div>
             <div className="flex gap-8 text-sm text-slate-600">
               <div>
-                <span className="font-semibold">Planned:</span> {activeSprint.plannedPoints} points
+                <span className="font-semibold">Planned:</span> {plannedPoints} points
               </div>
               <div>
                 <span className="font-semibold">Completed:</span>{' '}
@@ -175,7 +180,10 @@ export default function SprintBoardPage() {
                 <input
                   type="date"
                   value={editStartDate}
-                  onChange={(e) => setEditStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setEditStartDate(e.target.value);
+                    setEditEndDate(computeEndDate(e.target.value));
+                  }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

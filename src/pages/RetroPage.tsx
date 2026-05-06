@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { useAppStore, selectCompletedSprints } from '../store/appStore';
+import { useAppStore, selectCompletedSprints, selectPlannedPointsForSprint, selectCompletedPointsForSprint } from '../store/appStore';
 
 export default function RetroPage() {
   const completedSprints = useAppStore(selectCompletedSprints);
@@ -10,6 +10,8 @@ export default function RetroPage() {
   const [editText, setEditText] = useState('');
 
   const selectedSprint = completedSprints.find((s) => s.id === selectedSprintId);
+  const plannedPoints = useAppStore(selectPlannedPointsForSprint(selectedSprintId ?? ''));
+  const completedPoints = useAppStore(selectCompletedPointsForSprint(selectedSprintId ?? ''));
 
   const handleSelectSprint = (sprintId: string) => {
     setSelectedSprintId(sprintId);
@@ -76,7 +78,7 @@ export default function RetroPage() {
                   {format(new Date(selectedSprint.startDate), 'MMM d, yyyy')} – {format(new Date(selectedSprint.endDate), 'MMM d, yyyy')}
                 </h2>
                 <p className="text-sm text-slate-600 mt-1">
-                  Completed: {selectedSprint.completedPoints}/{selectedSprint.plannedPoints} points
+                  Completed: {completedPoints}/{plannedPoints} points
                 </p>
               </div>
 

@@ -1,6 +1,5 @@
 import type { StateCreator } from 'zustand';
 import { v4 as uuid } from 'uuid';
-import { addDays, format, parseISO } from 'date-fns';
 import type { AppStore } from '../appStore';
 import type { Sprint } from '../../types';
 
@@ -8,7 +7,7 @@ export interface SprintsSlice {
   sprints: Sprint[];
   createDraftSprint: (input: {
     startDate: string;
-    lengthDays: number;
+    endDate: string;
   }) => Sprint;
   startSprint: (sprintId: string, plannedPoints: number) => void;
   updateSprint: (sprintId: string, partial: Partial<Sprint>) => void;
@@ -22,13 +21,9 @@ export const createSprintsSlice: StateCreator<
   SprintsSlice
 > = (set, get) => ({
   sprints: [],
-  createDraftSprint: ({ startDate, lengthDays }) => {
+  createDraftSprint: ({ startDate, endDate }) => {
     const existing = get().sprints;
     const number = existing.length + 1;
-    const endDate = format(
-      addDays(parseISO(startDate), Math.max(1, lengthDays) - 1),
-      'yyyy-MM-dd'
-    );
     const sprint: Sprint = {
       id: uuid(),
       number,

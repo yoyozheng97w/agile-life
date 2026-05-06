@@ -49,3 +49,9 @@ export const selectCompletedSprints = (state: AppStore) =>
 
 export const selectTicketsForSprint = (sprintId: string) => (state: AppStore) =>
   state.tickets.filter((t) => t.sprintId === sprintId);
+
+export const selectPlannedPointsForSprint = (sprintId: string) => (state: AppStore) =>
+  state.tickets.filter((t) => t.sprintId === sprintId).reduce((sum, t) => sum + t.points, 0);
+
+export const selectCompletedPointsForSprint = (sprintId: string) => (state: AppStore) =>
+  state.tickets.filter((t) => t.sprintId === sprintId && t.status === 'done').reduce((sum, t) => sum + t.points, 0);

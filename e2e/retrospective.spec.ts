@@ -3,6 +3,7 @@ import {
   BASE_URL,
   buildSprint,
   buildState,
+  buildTicket,
   gotoFresh,
   gotoSeeded,
   readStore,
@@ -116,5 +117,28 @@ test.describe('Retrospective page', () => {
     await page.goto(BASE_URL + '/retro', { waitUntil: 'networkidle' });
     await page.locator('button').filter({ hasText: /Apr 1 – Apr 14/ }).click();
     await expect(page.getByText('Persistent thoughts')).toBeVisible();
+  });
+
+  test('Completed: Y/X points reflects dynamic ticket sums, not sprint.plannedPoints', async ({ page }) => {
+    // sprint.plannedPoints is 0 (the initial default value) — the UI must derive both figures from tickets
+    const sprint = buildSprint({
+      id: 's-points',
+      status: 'completed',
+      startDate: '2026-04-01',
+      endDate: '2026-04-14',
+      plannedPoints: 0,
+      completedPoints: 0,
+    });
+    const done1 = buildTicket({ sprintId: 's-points', points: 5,  status: 'done', completedAt: '2026-04-10T10:00:00.000Z' });
+    const done2 = buildTicket({ sprintId: 's-points', points: 8,  status: 'done', completedAt: '2026-04-12T10:00:00.000Z' });
+    const todo  = buildTicket({ sprintId: 's-points', points: 3,  status: 'todo' });
+    const blocking = buildTicket({ sprintId: 's-points', points: 2, status: 'blocking' });
+
+    await gotoSeeded(page, buildState({ sprints: [sprint], tickets: [done1, done2, todo, blocking] }), '/retro');
+
+    await page.locator('button').filter({ hasText: /Apr 1 – Apr 14/ }).click();
+
+    // Completed = 5+8 = 13, Planned = 5+8+3+2 = 18
+    await expect(page.getByText('Completed: 13/18 points')).toBeVisible();
   });
 });

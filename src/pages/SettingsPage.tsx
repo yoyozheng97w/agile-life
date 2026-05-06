@@ -29,9 +29,10 @@ export default function SettingsPage() {
             min="1"
             max="30"
             value={settings.sprintLengthDays}
-            onChange={(e) =>
-              updateSettings({ sprintLengthDays: parseInt(e.target.value) })
-            }
+            onChange={(e) => {
+              const val = parseInt(e.target.value, 10);
+              if (!isNaN(val) && val >= 1) updateSettings({ sprintLengthDays: val });
+            }}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-xs text-slate-500 mt-1">Default: 14 days</p>
