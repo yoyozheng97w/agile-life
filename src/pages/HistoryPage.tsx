@@ -5,7 +5,8 @@ import { useAppStore, selectCompletedSprints } from '../store/appStore';
 import type { Sprint } from '../types';
 
 export default function HistoryPage() {
-  const { updateSprint, deleteSprintAndTickets } = useAppStore();
+  const updateSprint = useAppStore((s) => s.updateSprint);
+  const deleteSprintAndTickets = useAppStore((s) => s.deleteSprintAndTickets);
   const completedSprints = useAppStore(selectCompletedSprints);
   const tickets = useAppStore((s) => s.tickets);
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -4,7 +4,7 @@ import { useAppStore, selectCompletedSprints, selectPlannedPointsForSprint, sele
 
 export default function RetroPage() {
   const completedSprints = useAppStore(selectCompletedSprints);
-  const { updateSprint } = useAppStore();
+  const updateSprint = useAppStore((s) => s.updateSprint);
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState('');
