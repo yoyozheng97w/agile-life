@@ -16,6 +16,20 @@ model: sonnet
 
 ## 審查流程
 
+### 第零步：檢查是否有 code 改動
+
+```bash
+git diff --staged --name-only
+```
+
+若 staged 檔案**全部都是 `.md`**（或 staged 為空），直接輸出：
+
+```
+SKIPPED: 無 code 改動，不需要 code review
+```
+
+然後結束，不繼續執行後續步驟。
+
 ### 第一步：取得變更範圍
 
 ```bash

@@ -119,6 +119,41 @@ agile-life/
 
 ---
 
+## Claude Code Setup
+
+This project uses Claude Code with a layered configuration:
+
+```
+~/.claude/CLAUDE.md          ← global: applies to every project (language rules, global prefs)
+CLAUDE.md                    ← project: architecture constraints, dev principles, known gotchas
+.claude/agents/              ← task agents: qa-engineer, code-reviewer, security-reviewer
+```
+
+Each layer narrows scope. The project `CLAUDE.md` documents the invariants Claude must never violate (single Zustand store, immutable `localStorage` key, no `completedAt` overwrite). Agents are purpose-built sub-processes that Claude spawns with `Agent()` — they run in isolation, have their own tool permissions, and report back a single result.
+
+### Agents
+
+| Agent | Trigger | What it does |
+|-------|---------|-------------|
+| `qa-engineer` | After any code change | `lint --fix` → `tsc -b` → E2E (non-drag must 100% pass) → manual drag checklist |
+| `code-reviewer` | Before every commit | Audits `git diff --staged`; auto-fixes `import type` and WHAT comments; blocks on invariants |
+| `security-reviewer` | Before every commit | Scans for XSS, insecure `localStorage` usage, `npm audit`; auto-fixes non-breaking CVEs |
+
+### Recommended Workflow
+
+```
+1. Make changes
+2. Ask Claude: "run qa-engineer"     # tsc + E2E — confirm nothing is broken first
+3. git add <files>
+4. Ask Claude: "run code-reviewer, then security-reviewer"
+5. git commit  (only if both return APPROVED)
+6. git push
+```
+
+QA runs before staging so that any issues are fixed before touching git. Code and security reviewers default to `git diff --staged` but can also review unstaged changes — staging first is not required.
+
+---
+
 ## localStorage Schema
 
 ```typescript

@@ -119,6 +119,41 @@ agile-life/
 
 ---
 
+## Claude Code 設定
+
+本專案採用 Claude Code 分層配置：
+
+```
+~/.claude/CLAUDE.md          ← 全域層：套用至所有專案（語言規則、個人偏好）
+CLAUDE.md                    ← 專案層：架構限制、開發原則、已知陷阱
+.claude/agents/              ← 任務代理：qa-engineer、code-reviewer、security-reviewer
+```
+
+每層逐步縮小範圍。專案 `CLAUDE.md` 記錄 Claude 絕對不可違反的 invariants（單一 Zustand store、不可變更 `localStorage` key、不覆寫 `completedAt`）。Agent 是 Claude 以 `Agent()` 召喚的獨立子程序，擁有自己的工具權限，並回傳單一結果給主對話。
+
+### Agents
+
+| Agent | 觸發時機 | 職責 |
+|-------|---------|------|
+| `qa-engineer` | 每次程式碼變動後 | `lint --fix` → `tsc -b` → E2E（非拖曳必須 100% 通過）→ 手動拖曳檢查清單 |
+| `code-reviewer` | 每次 commit 前 | 審查 `git diff --staged`；自動修 `import type` 與 WHAT 注釋；遇 invariant 問題回報 BLOCKED |
+| `security-reviewer` | 每次 commit 前 | 掃描 XSS、不安全 `localStorage` 用法、`npm audit`；自動修非 breaking CVE |
+
+### 推薦工作流程
+
+```
+1. 修改程式碼
+2. 請 Claude 執行 qa-engineer       # tsc + E2E，先確認功能沒壞
+3. git add <files>
+4. 請 Claude 依序執行 code-reviewer、security-reviewer
+5. git commit（兩者皆回傳 APPROVED 才 commit）
+6. git push
+```
+
+QA 在 stage 前執行，是因為一旦發現問題就要修再重新 stage。code-reviewer 與 security-reviewer 預設讀取 `git diff --staged`，但也可以審查未 staged 的變更，不一定要先 `git add`。
+
+---
+
 ## localStorage 資料結構
 
 ```typescript

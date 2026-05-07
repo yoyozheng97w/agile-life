@@ -59,8 +59,8 @@ src/
 | Agent | 何時使用 |
 |-------|---------|
 | `qa-engineer.md` | 程式碼改動後驗證功能正確性：TypeScript 編譯 → E2E 測試 → 手動測試清單 |
-| `code-reviewer.md` | commit **前**審查（`git diff --staged`）；可自動修低風險問題（`import type`、WHAT 注釋），invariant 問題回報 BLOCKED |
-| `security-reviewer.md` | commit **前**掃描（`git diff --staged`）：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
+| `code-reviewer.md` | **有 code 改動**的 commit 前審查（`git diff --staged`）；可自動修低風險問題（`import type`、WHAT 注釋），invariant 問題回報 BLOCKED |
+| `security-reviewer.md` | **有 code 改動**的 commit 前掃描（`git diff --staged`）：XSS、localStorage 安全、`npm audit` 依賴漏洞 |
 
 ---
 
@@ -105,7 +105,7 @@ const store = useAppStore();
 - 拖曳功能**必須在瀏覽器手動測試**，不能只靠 E2E
 - Comment 只寫 WHY（為什麼這樣做），不寫 WHAT（做了什麼）
 - 匯入純型別時使用 `import type`
-- **`git commit` 前必須依序執行 `code-reviewer` 和 `security-reviewer` subagents**；任一回報 BLOCKED 就停止，不得繞過
+- **有 code 改動（非純 `.md` 文件）的 `git commit` 前必須依序執行 `code-reviewer` 和 `security-reviewer` subagents**；任一回報 BLOCKED 就停止，不得繞過；純文件改動（如 `.md`）可直接 commit，無需 review
 - **E2E 測試必須交給 `qa-engineer` subagent 執行**；不得自己直接跑 `npm run test:e2e`
 
 ### NEVER
@@ -124,7 +124,7 @@ const store = useAppStore();
 
 **通知為何用 30s polling**：`setTimeout` 在電腦睡眠或 DST 切換後會失準；polling 每次醒來都重新計算當下時間。
 
-**dnd-kit E2E 不穩定**：Playwright 的 pointer 事件模擬和瀏覽器原生行為有差異，dnd-kit 測試偶發失敗是已知問題，不代表功能壞掉。
+**dnd-kit E2E 失敗處理**：Playwright 的 pointer 事件模擬和瀏覽器原生行為有差異，dnd-kit 測試可能偶發失敗。`qa-engineer` 會收集失敗截圖並要求使用者手動驗證，由使用者決定是真實 bug 還是 Playwright 假失敗，不自動判定為 BLOCKED。
 
 ---
 

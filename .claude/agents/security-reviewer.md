@@ -32,13 +32,21 @@ fix 後重跑 `npm audit --audit-level=moderate` 確認剩餘問題。
 
 ## 掃描流程
 
-### 第零步：取得本次變更範圍（供參考）
+### 第零步：檢查是否有 code 改動
 
 ```bash
 git diff --staged --name-only
 ```
 
-掃描仍針對整個 `src/`，但優先重點審查變更的檔案。
+若 staged 檔案**全部都是 `.md`**（或 staged 為空），直接輸出：
+
+```
+SKIPPED: 無 code 改動，不需要 security review
+```
+
+然後結束，不繼續執行後續步驟（包含 `npm audit`）。
+
+否則繼續，掃描針對整個 `src/`，但優先重點審查變更的檔案。
 
 ### 第一步：XSS 風險
 
