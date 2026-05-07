@@ -57,11 +57,15 @@ TypeScript 編譯失敗 → 停止，回報 BLOCKED（附建議修法）。
 
 ### 第二關：E2E（第一關全過才跑）
 
-```bash
-npm run test:e2e
-```
+分兩段執行：
 
-通過率 ≥ 50%。已知可接受的失敗：拖曳 timeout、Fibonacci 按鈕選擇器 timeout。
+```bash
+# 非拖曳測試：必須 100% 通過，任何失敗 = BLOCKED
+npx playwright test e2e/smoke.spec.ts e2e/sprint-creation.spec.ts e2e/tickets.spec.ts e2e/sprint-lifecycle.spec.ts e2e/retrospective.spec.ts e2e/history.spec.ts e2e/persistence.spec.ts e2e/settings.spec.ts
+
+# 拖曳測試：失敗可接受（dnd-kit pointer 事件模擬已知不穩定）
+npx playwright test e2e/kanban-drag.spec.ts || true
+```
 
 ### 第三關：手動測試
 
