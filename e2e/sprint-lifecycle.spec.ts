@@ -112,8 +112,11 @@ test.describe('Sprint lifecycle - automatic transitions', () => {
     expect(carried).toHaveLength(2);
     for (const t of carried) {
       expect(t.carriedFromSprintId).toBe(sprint.id);
-      expect(t.status).toBe('todo');
     }
+    // Carried tickets preserve their original status instead of being reset to 'todo'
+    const carriedByTitle = Object.fromEntries(carried.map((t) => [t.title, t.status]));
+    expect(carriedByTitle['Unfinished']).toBe('doing');
+    expect(carriedByTitle['Stuck']).toBe('blocking');
 
     const titles = carried.map((t) => t.title).sort();
     expect(titles).toEqual(['Stuck', 'Unfinished']);

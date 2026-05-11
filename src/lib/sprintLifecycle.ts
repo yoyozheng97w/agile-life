@@ -4,7 +4,7 @@ import type { Sprint } from '../types';
 
 export function closeAndCarryOver(sprintId: string) {
   const store = useAppStore.getState();
-  const { sprints, tickets, updateSprint, addTicket } = store;
+  const { sprints, tickets, settings, updateSprint, addTicket } = store;
 
   const sprint = sprints.find((s) => s.id === sprintId);
   if (!sprint) return;
@@ -32,7 +32,7 @@ export function closeAndCarryOver(sprintId: string) {
       id: uuid(),
       number: sprint.number + 1,
       startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      endDate: new Date(Date.now() + settings.sprintLengthDays * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
       status: 'planning',
@@ -52,7 +52,7 @@ export function closeAndCarryOver(sprintId: string) {
         description: ticket.description,
         points: ticket.points,
         sprintId: newSprint.id,
-        status: 'todo',
+        status: ticket.status,
         carriedFromSprintId: sprintId,
       });
     });
