@@ -14,6 +14,7 @@
 - **每日站立提醒** — 在設定的時間推送瀏覽器通知
 - **離線優先** — 所有資料存於瀏覽器 localStorage，無需後端
 - **Sprint 生命週期自動化** — Sprint 依據日期自動啟動與關閉；未完成票務自動帶入下一個 Sprint
+- **Sprint 目標** — 為每個 Sprint 設定目標；Sprint 結束後，目標會顯示在回顧頁面
 - **回顧記錄** — 為每個 Sprint 撰寫與編輯回顧筆記
 
 ---
@@ -168,6 +169,7 @@ localStorage['agile-life-app/v1'] = {
     startDate: string, endDate: string,  // "YYYY-MM-DD"
     status: 'planning' | 'active' | 'completed',
     plannedPoints: number, completedPoints: number,
+    goal?: string,
     retrospective?: string
   }],
   tickets: [{

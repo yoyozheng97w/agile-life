@@ -14,6 +14,7 @@ Manage your life using Scrum methodology. A personal, single-machine web app to 
 - **Daily Standup Reminders** — Browser notifications at your configured time
 - **Offline-First** — All data persists in browser localStorage, no backend required
 - **Automatic Sprint Lifecycle** — Sprints activate and close based on dates; incomplete tickets carry over automatically
+- **Sprint Goal** — Set a goal for each sprint; displayed alongside the retrospective when the sprint completes
 - **Retrospectives** — Record and edit sprint retrospective notes per sprint
 
 ---
@@ -168,6 +169,7 @@ localStorage['agile-life-app/v1'] = {
     startDate: string, endDate: string,  // "YYYY-MM-DD"
     status: 'planning' | 'active' | 'completed',
     plannedPoints: number, completedPoints: number,
+    goal?: string,
     retrospective?: string
   }],
   tickets: [{
