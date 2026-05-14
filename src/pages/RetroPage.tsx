@@ -82,6 +82,13 @@ export default function RetroPage() {
                 </p>
               </div>
 
+              {selectedSprint.goal && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-blue-700 mb-1">Sprint Goal</p>
+                  <p className="text-sm text-blue-900 whitespace-pre-wrap">{selectedSprint.goal}</p>
+                </div>
+              )}
+
               {isEditing ? (
                 <>
                   <textarea

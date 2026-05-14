@@ -33,10 +33,15 @@ export default function SprintBoardPage() {
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
   const [editingTicket, setEditingTicket] = useState<{ id: string; title: string; description: string; points: number } | null>(null);
+  const [goalDraft, setGoalDraft] = useState('');
 
   useEffect(() => {
     syncSprintStatuses();
   }, []);
+
+  useEffect(() => {
+    setGoalDraft(activeSprint?.goal ?? '');
+  }, [activeSprint?.id]);
 
 
   const handleCreateSprint = () => {
@@ -259,6 +264,18 @@ export default function SprintBoardPage() {
           ))}
         </div>
       </DndContext>
+
+      <div className="mt-6 bg-white rounded-lg shadow p-4">
+        <h2 className="text-sm font-semibold text-slate-700 mb-2">Sprint Goal</h2>
+        <textarea
+          value={goalDraft}
+          onChange={(e) => setGoalDraft(e.target.value)}
+          onBlur={() => updateSprint(activeSprint.id, { goal: goalDraft })}
+          placeholder="What is the goal for this sprint?"
+          rows={3}
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+        />
+      </div>
 
       {editingTicket && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

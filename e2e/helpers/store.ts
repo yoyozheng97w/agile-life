@@ -18,6 +18,7 @@ export interface Sprint {
   status: SprintStatus;
   plannedPoints: number;
   completedPoints: number;
+  goal?: string;
   retrospective?: string;
 }
 
